@@ -13,6 +13,10 @@ RUN apt-get update && apt-get install -y \
     && apt-get install -y google-chrome-stable \
     && rm -rf /var/lib/apt/lists/*
 
+# Set environment variables for Chrome binary location (used by f.py)
+ENV CHROME_BIN=/usr/bin/google-chrome
+ENV GOOGLE_CHROME_BIN=/usr/bin/google-chrome
+
 # Set working directory
 WORKDIR /app
 
