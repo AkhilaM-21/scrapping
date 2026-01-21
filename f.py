@@ -611,10 +611,11 @@ def fb_manual_login(driver):
     cookies_loaded = False
 
     # 1. Try to load cookies from ENV (Best for Render)
-    if os.environ.get("FB_COOKIES_BASE64"):
+    env_cookies = os.environ.get("FB_COOKIES_BASE64")
+    if env_cookies:
+        print(f"[DEBUG] Found FB_COOKIES_BASE64 in env (len={len(env_cookies)})")
         try:
-            cookies_b64 = os.environ.get("FB_COOKIES_BASE64")
-            cookies = pickle.loads(base64.b64decode(cookies_b64))
+            cookies = pickle.loads(base64.b64decode(env_cookies))
             for cookie in cookies:
                 # Sanitize cookies (remove sameSite which causes issues in Selenium)
                 if 'sameSite' in cookie:
@@ -627,6 +628,8 @@ def fb_manual_login(driver):
             time.sleep(10)
         except Exception as e:
             print(f"[WARN] Failed to load cookies from ENV: {e}")
+    else:
+        print("[DEBUG] FB_COOKIES_BASE64 not set in environment.")
 
     # 2. Try to load cookies from file (Fallback)
     if not cookies_loaded and os.path.exists(COOKIES_FILE):
@@ -661,7 +664,8 @@ def fb_manual_login(driver):
         
         # Prevent blocking input on Render/Remote environment
         if os.environ.get("RENDER") or os.environ.get("BROWSERLESS_API_KEY") or os.environ.get("SCRAPINGBEE_API_KEY"):
-            print("[ERROR] Manual login required but running in remote environment. Aborting.")
+            print("[ERROR] Manual login required but running in remote environment.")
+            print("[ACTION REQUIRED] Please generate new cookies locally using 'cookie.py', copy the Base64 string, and update the 'FB_COOKIES_BASE64' environment variable in Render.")
             return False
 
         print("\n[MANUAL LOGIN REQUIRED]")
