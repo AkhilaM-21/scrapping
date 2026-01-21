@@ -12,6 +12,7 @@ import math
 import concurrent.futures
 import zipfile
 import sys
+import urllib3
 
 import pandas as pd
 from selenium import webdriver
@@ -30,6 +31,8 @@ from pymongo import MongoClient
 
 # Disable SSL verification for driver download (fixes common hang issues on Render)
 os.environ['WDM_SSL_VERIFY'] = '0'
+# Suppress InsecureRequestWarning logs
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
 TARGET_PAGES = [
@@ -523,6 +526,11 @@ def create_driver():
     opts.page_load_strategy = 'eager'
     opts.add_argument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
     
+    # Anti-detection features to prevent Facebook from invalidating cookies
+    opts.add_argument("--disable-blink-features=AutomationControlled")
+    opts.add_experimental_option("excludeSwitches", ["enable-automation"])
+    opts.add_experimental_option("useAutomationExtension", False)
+    
     # Force English language to ensure metrics scraping works (e.g. "Comments", "Shares")
     opts.add_argument("--lang=en-US")
     opts.add_experimental_option("prefs", {
@@ -628,6 +636,14 @@ def fb_manual_login(driver):
             time.sleep(10)
         except Exception as e:
             print(f"[WARN] Failed to load cookies: {e}")
+
+    # 2.5 Positive Check: Look for success indicators before assuming failure
+    # If we see the feed or profile icon, we are logged in, even if a hidden login form exists.
+    if driver.find_elements(By.XPATH, "//div[@role='feed']") or \
+       driver.find_elements(By.CSS_SELECTOR, "[aria-label='Account controls']") or \
+       driver.find_elements(By.CSS_SELECTOR, "[aria-label='Your profile']"):
+        print("[INFO] Login verified (Feed/Profile detected).")
+        return True
 
     # 3. Check if we need to log in (look for login form or 'login' in URL)
     email_input = driver.find_elements(By.ID, "email")
