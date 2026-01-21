@@ -635,7 +635,7 @@ def fb_manual_login(driver):
         # Prevent blocking input on Render/Remote environment
         if os.environ.get("RENDER") or os.environ.get("BROWSERLESS_API_KEY") or os.environ.get("SCRAPINGBEE_API_KEY"):
             print("[ERROR] Manual login required but running in remote environment. Aborting.")
-            sys.exit(1)
+            return False
 
         print("\n[MANUAL LOGIN REQUIRED]")
         print("1. Log in to Facebook in the opened browser.")
