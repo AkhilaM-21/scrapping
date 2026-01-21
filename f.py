@@ -521,6 +521,7 @@ def create_driver():
     opts.add_argument("--disable-dev-tools")
     opts.add_argument("--disable-software-rasterizer")
     opts.page_load_strategy = 'eager'
+    opts.add_argument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
     
     # Force English language to ensure metrics scraping works (e.g. "Comments", "Shares")
     opts.add_argument("--lang=en-US")
@@ -629,8 +630,11 @@ def fb_manual_login(driver):
             print(f"[WARN] Failed to load cookies: {e}")
 
     # 3. Check if we need to log in (look for login form or 'login' in URL)
-    if driver.find_elements(By.ID, "email") or "login" in driver.current_url:
+    email_input = driver.find_elements(By.ID, "email")
+    if email_input or "login" in driver.current_url:
         print(f"[DEBUG] Login check failed. Current URL: {driver.current_url}")
+        if email_input:
+            print("[DEBUG] Found login form (id='email'). Session invalid.")
         
         # Prevent blocking input on Render/Remote environment
         if os.environ.get("RENDER") or os.environ.get("BROWSERLESS_API_KEY") or os.environ.get("SCRAPINGBEE_API_KEY"):
