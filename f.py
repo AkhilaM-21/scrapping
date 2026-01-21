@@ -616,7 +616,11 @@ def fb_manual_login(driver):
             cookies_b64 = os.environ.get("FB_COOKIES_BASE64")
             cookies = pickle.loads(base64.b64decode(cookies_b64))
             for cookie in cookies:
-                driver.add_cookie(cookie)
+                # Sanitize cookies (remove sameSite which causes issues in Selenium)
+                if 'sameSite' in cookie:
+                    del cookie['sameSite']
+                try: driver.add_cookie(cookie)
+                except: pass
             print("[INFO] Cookies loaded from FB_COOKIES_BASE64. Refreshing page...")
             driver.refresh()
             cookies_loaded = True
@@ -630,7 +634,10 @@ def fb_manual_login(driver):
             with open(COOKIES_FILE, "rb") as f:
                 cookies = pickle.load(f)
                 for cookie in cookies:
-                    driver.add_cookie(cookie)
+                    if 'sameSite' in cookie:
+                        del cookie['sameSite']
+                    try: driver.add_cookie(cookie)
+                    except: pass
             print("[INFO] Cookies loaded from file. Refreshing page...")
             driver.refresh()
             time.sleep(10)
