@@ -516,8 +516,11 @@ def create_driver():
     opts.add_argument("--no-sandbox")
     opts.add_argument("--disable-dev-shm-usage")
     opts.add_argument("--disable-gpu")
-    # opts.add_argument("--disable-extensions")
+    opts.add_argument("--disable-extensions")
+    opts.add_argument("--disable-infobars")
+    opts.add_argument("--disable-dev-tools")
     opts.add_argument("--disable-software-rasterizer")
+    opts.page_load_strategy = 'eager'
     
     # Force English language to ensure metrics scraping works (e.g. "Comments", "Shares")
     opts.add_argument("--lang=en-US")
@@ -587,7 +590,10 @@ def create_driver():
         )
 
     service = Service(ChromeDriverManager().install())
-    return webdriver.Chrome(service=service, options=opts)
+    driver = webdriver.Chrome(service=service, options=opts)
+    driver.set_page_load_timeout(60)
+    driver.set_script_timeout(60)
+    return driver
 
 
 def fb_manual_login(driver):
@@ -1232,7 +1238,14 @@ def worker_process(urls):
     
     try:
         if fb_manual_login(driver):
-            for url in urls:
+            for i, url in enumerate(urls):
+                # Restart driver every 5 pages to prevent Memory Leaks/OOM on Render
+                if i > 0 and i % 5 == 0:
+                    print(f"[INFO] Restarting driver to free memory (processed {i} pages)...")
+                    driver.quit()
+                    driver = create_driver()
+                    fb_manual_login(driver)
+
                 results.extend(scrape_single_page(driver, url, daily_data_col))
     except Exception as e:
         print(f"[ERROR] Worker exception: {e}")
