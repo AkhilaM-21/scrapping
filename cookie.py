@@ -21,6 +21,12 @@ def main():
         opts.add_argument("--start-maximized")
         opts.add_argument("--disable-notifications")
         
+        # Match f.py User-Agent and settings to prevent session invalidation
+        opts.add_argument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+        opts.add_argument("--disable-blink-features=AutomationControlled")
+        opts.add_experimental_option("excludeSwitches", ["enable-automation"])
+        opts.add_experimental_option("useAutomationExtension", False)
+        
         try:
             print("[INFO] Initializing Chrome Driver...")
             service = Service(ChromeDriverManager().install())
