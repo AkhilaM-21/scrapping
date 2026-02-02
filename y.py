@@ -837,7 +837,7 @@ def calculate_channel_aggregates(videos: List[Dict[str, Any]]) -> pd.DataFrame:
 def fetch_data_from_db(uri: str, db_name: str, collection_name: str) -> List[Dict[str, Any]]:
     """Fetch all video data from a specific MongoDB cluster"""
     try:
-        client = MongoClient(uri)
+        client = MongoClient(uri, serverSelectionTimeoutMS=5000)
         db = client[db_name]
         collection = db[collection_name]
         data = list(collection.find({}, {"_id": 0}))
