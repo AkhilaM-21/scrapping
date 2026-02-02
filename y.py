@@ -724,7 +724,7 @@ class DatabaseManager:
     """Manage database operations"""
     
     def __init__(self):
-        self.client = MongoClient(SECOND_MONGO_URL)
+        self.client = MongoClient(SECOND_MONGO_URL, tlsAllowInvalidCertificates=True)
         self.db = self.client['youtube']
         self.collection = self.db['dailyscraping']
     
@@ -837,7 +837,7 @@ def calculate_channel_aggregates(videos: List[Dict[str, Any]]) -> pd.DataFrame:
 def fetch_data_from_db(uri: str, db_name: str, collection_name: str) -> List[Dict[str, Any]]:
     """Fetch all video data from a specific MongoDB cluster"""
     try:
-        client = MongoClient(uri, serverSelectionTimeoutMS=5000)
+        client = MongoClient(uri, serverSelectionTimeoutMS=5000, tlsAllowInvalidCertificates=True)
         db = client[db_name]
         collection = db[collection_name]
         data = list(collection.find({}, {"_id": 0}))
