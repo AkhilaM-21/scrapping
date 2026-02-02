@@ -13,6 +13,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 import logging
 from fastapi import FastAPI, BackgroundTasks
 import uvicorn
+from fastapi.middleware.cors import CORSMiddleware
 import threading
 PORT=8000
 API_KEY = "AIzaSyB0BmlMTTcZIffxK16bLDFMyUcN7rOVtFM"  
@@ -448,8 +449,8 @@ BATCH_SIZE = 50
 DB_BATCH_SIZE = 500
 
 load_dotenv()
-MONGO_URL = "mongodb+srv://akhilamerugu:root@youtube.b3wyvwo.mongodb.net/mydb?authSource=admin&retryWrites=true&w=majority"
-SECOND_MONGO_URL = "mongodb+srv://akhila:root@youtube1.bqto0ug.mongodb.net/?appName=youtube1"
+MONGO_URL = "mongodb+srv://akhila:root@youtube1.bqto0ug.mongodb.net/?appName=youtube1"
+SECOND_MONGO_URL = "mongodb+srv://akhilamerugu:root@youtube.b3wyvwo.mongodb.net/mydb?authSource=admin&retryWrites=true&w=majority"
 
 
 
@@ -1031,6 +1032,14 @@ def run_scheduler():
 
 app = FastAPI()
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 @app.get("/")
 def health_check():
     return {"status": "YouTube Scraper Service is running"}
@@ -1039,6 +1048,11 @@ def health_check():
 def trigger_scrape(background_tasks: BackgroundTasks):
     background_tasks.add_task(main)
     return {"message": "Scrape started in background"}
+
+@app.get("/raw-data")
+def get_raw_data():
+    data = fetch_data_from_clusters_parallel()
+    return {"raw_videos": data}
 
 if __name__ == "__main__":
     # Check if running on Render (PORT env var is set)
