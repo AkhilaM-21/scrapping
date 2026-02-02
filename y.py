@@ -11,6 +11,9 @@ from dotenv import load_dotenv
 import pandas as pd
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import logging
+from fastapi import FastAPI, BackgroundTasks
+import uvicorn
+import threading
 
 API_KEY = "AIzaSyB0BmlMTTcZIffxK16bLDFMyUcN7rOVtFM"  
 CHANNEL_URLS = [
@@ -1026,9 +1029,28 @@ def run_scheduler():
             logger.error(f"Scheduler encountered an error: {e}")
             time.sleep(60)
 
+app = FastAPI()
+
+@app.get("/")
+def health_check():
+    return {"status": "YouTube Scraper Service is running"}
+
+@app.post("/trigger-scrape")
+def trigger_scrape(background_tasks: BackgroundTasks):
+    background_tasks.add_task(main)
+    return {"message": "Scrape started in background"}
+
 if __name__ == "__main__":
-    # Check for a flag to run immediately for testing, e.g., python y.py --now
-    if len(sys.argv) > 1 and sys.argv[1] == "--now":
+    # Check if running on Render (PORT env var is set)
+    if os.environ.get("PORT"):
+        # Start scheduler in a background thread so it doesn't block the web server
+        scheduler_thread = threading.Thread(target=run_scheduler, daemon=True)
+        scheduler_thread.start()
+        
+        # Run the web server
+        port = int(os.environ.get("PORT", 10000))
+        uvicorn.run(app, host="0.0.0.0", port=port)
+    elif len(sys.argv) > 1 and sys.argv[1] == "--now":
         main()
     else:
         run_scheduler()
