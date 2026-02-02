@@ -3,8 +3,8 @@ import csv
 import time
 import re
 import os
-import sys
-from datetime import datetime
+import sys 
+from datetime import datetime, timezone, timedelta
 from typing import Optional, List, Dict, Any
 from pymongo import MongoClient, UpdateOne
 from dotenv import load_dotenv
@@ -14,301 +14,187 @@ import logging
 
 API_KEY = "AIzaSyB0BmlMTTcZIffxK16bLDFMyUcN7rOVtFM"  
 CHANNEL_URLS = [
-# "https://www.youtube.com/@teamlokesh4698",
-# "https://www.youtube.com/c/AmaravatiVoice",
-# "https://www.youtube.com/@wefor_CBN",
-# "https://www.youtube.com/@leoentertainmentchannel/",
-# "https://www.youtube.com/@tdpwhatsappstatus4135/",
-# "https://www.youtube.com/@TDPPunch",
-# "https://www.youtube.com/c/CBNFORTHEBETTERNATION",
-# "https://youtube.com/@dalapathiln?si=RkGRBf7Voae1gtN5",
-# "https://www.youtube.com/@Okeokkadu_cbn",
-# "https://www.youtube.com/c/LNFORYUVA",
-# "https://www.youtube.com/@Maheshmedia/",
-# "https://www.youtube.com/@WildWolfTelugu/about",
-# "https://www.youtube.com/c/WeSupportTDP",
-# "https://www.youtube.com/@CBNFORPEOPLE/",
-# "https://www.youtube.com/@OpenTalkTeam/about",
-# "https://www.youtube.com/c/TheLeoNews/",
-# "https://youtube.com/@idhicorrect?si=kETdWdH0lo91N-iB",
-# "https://www.youtube.com/@massmama3679/",
-# "https://www.youtube.com/@meowmeowpilli7/about",
-# "https://www.youtube.com/@PopcornMediaofficial/about",
-# "https://www.youtube.com/@RocketTeluguNews/a",
-# "https://www.youtube.com/@TakeOneMedia99/",
-# "https://www.youtube.com/c/TDPActivist",
-# "https://www.youtube.com/@ThinkAndhra",
-# "https://www.youtube.com/@ThinkTollywood/videos",
-# "https://www.youtube.com/@TDP_YOUTH_WARRIORS/",
-# "https://www.youtube.com/@tdp_students",
-# "https://youtube.com/@andhraism-q7i?si=bqlYHybCWPxuhYZo",
-# "https://youtube.com/@tdpat175?si=3bHR1z1GrL3Y8JlP",
-# "https://www.youtube.com/c/VoiceofTDP9",
-# "https://www.youtube.com/@peopleopinion2024",
-# "https://www.youtube.com/@tdpyuva675/videos",
-# "https://www.youtube.com/@bigbosscbn2059",
-# "https://www.youtube.com/@FusuCk",
-# "https://www.youtube.com/@pinkomedia",
-# "https://www.youtube.com/@balayyapunch",
-# "https://www.youtube.com/@WildWolfDigi",
-# "https://www.youtube.com/@JaiiTdp",
-# "https://www.youtube.com/@vanaramedia_official",
-# "https://www.youtube.com/@vanara_politics",
-# "https://www.youtube.com/@vanara_media",
-# "https://youtube.com/@GangTdp",
-# "https://youtube.com/@sharechey_mawa?si=TXA4-Hq9fe8vHtWE",
-# "https://www.youtube.com/@AbbaKamalHassanYT",
-# "https://www.youtube.com/@AlladistaTrolls-N",
-# "https://www.youtube.com/@wearetdp/featured",
-# "https://www.youtube.com/@MemeRaPushpa",
-# "https://www.youtube.com/@MemesBandi",
-# "https://youtube.com/@sarcasticsadhana?si=scC-PAzkSGK9hQsF",
-# "https://youtube.com/@SuperSubbuOfficial",
-# "https://youtube.com/@IamwithNCBN",
-# "https://youtube.com/@thaggedheley9?si=P6VEKIaT2ZhoUWsi",
-# "https://www.youtube.com/@myfirstvoteforcbn",
-# "https://www.youtube.com/@Janagalam",
-# "https://www.youtube.com/@TDPforpeople",
-# "https://www.youtube.com/@taja3046",
-# "https://youtube.com/@apnextcm-jo2ee?si=tAu2YsPTEJPQtYYZ",
-# "https://youtube.com/@jananadi-2024?si=bSx9zwBCE9Sz9wC1",
-# "https://youtube.com/@tdpcommunity.official?si=tZsQyIkLP9HUOOpB",
-# "https://www.youtube.com/@appolitics_2024/featured",
-# "https://www.youtube.com/channel/UC8VZtBNbrLgrazQF-SrfODA",
-# "https://www.youtube.com/@nayapolitics.Official",
-# "https://www.youtube.com/@peoplemedia-en9fy/featured",
-# "https://www.youtube.com/@yuvagalamofficial/featured",
-# "https://www.youtube.com/@cbnfollower9999",
-# "https://www.youtube.com/@tdpkutumbam9731",
-# "https://www.youtube.com/@CbnTheLegend2024",
-# "https://youtube.com/@tdptrends.official?si=272ubF_n5Qt6qFxj",
-# "https://www.youtube.com/@tdpat_175",
-# "https://youtube.com/@poweroftdp.official?si=dLBh1yZuAK2FpbAb",
-# "https://www.youtube.com/@votefortdp2024",
-# "https://www.youtube.com/@Telugu_Sena",
-# "https://www.youtube.com/@news24.telugu",
-# "https://www.youtube.com/@teamlokesh4698",
-# "https://www.youtube.com/@thinkandvote.",
-# "https://www.youtube.com/@TeluguSena.Officia",
-# "https://www.youtube.com/@TeluguSena2024",
-# "https://www.youtube.com/@TeamTdp-xd6yf",
-# "https://www.youtube.com/@ChaitanyaRadhamTdp",
-# "https://www.youtube.com/@TDPYOUTH963",
-# "https://youtube.com/@yuvasena_tdp?si=DZ-tE57MiwhudhT1",
-# "https://youtube.com/@tillu_trolls?si=-JFgurphZKlcYifU",
-# "https://www.youtube.com/@PointBlankTelugu",
-# "https://www.youtube.com/@PointBlankTvDigital",
-# "https://www.youtube.com/@PillaluRaMeeru3",
-# "https://youtube.com/@imwithlokesh?si=YReJr_9xJHIFHGAm",
-# "https://youtube.com/@localpolitics-z8d?si=3aeSOhWWltD3NX4R",
-# "https://www.youtube.com/@vamsikgottipati",
-# "https://youtube.com/@publicvision-n5n?si=hbRKx9tLXvIgigH_",
-# "https://www.youtube.com/channel/UCGueOBvBu3N3CuSZDB1jrJg",
-# "https://www.youtube.com/@politicalikon",
-# "https://youtube.com/@crazykanna0?si=GpINjjsh4FdTnG9D",
-# "https://www.youtube.com/channel/UCX0xQCu0wNNPvka6edHNRew",
-# "https://youtube.com/@publicpulse-ap?si=gt2tEFknqCQT7m-X",
-# "https://youtube.com/@ap_talks..0?si=crLxvz1xKM39yyDq]",
-# "https://www.youtube.com/@BANKUSEENU",
-# "https://youtube.com/@jaitelugudesam2029?si=xMHwoSNcRmW59Zai",
-# "https://youtube.com/@letstalk-telugu?si=JOZvtktBq9ITxHIe",
-# "https://youtube.com/@tdpera?feature=shared",
-# "https://www.youtube.com/@sivazee/videos",
-# "https://www.youtube.com/channel/UCJCsh1Th4Rze_orin4gzkRg",
-# "https://www.youtube.com/channel/UC3MpAScuECXdkBp0Oks2ouA",
-# "https://www.youtube.com/@tdpstatus",
-# "https://www.youtube.com/@Jagan730FakePromises",
-# "https://www.youtube.com/@We_For_CBN",
-# "https://www.youtube.com/@lokeshforpeople.29",
-# "https://youtube.com/@teluguvaradhi.official?si=yzelqJ1cVLsOUAaR",
-# "https://www.youtube.com/@RMSNEWS7",
-# "https://www.youtube.com/@TDP_LOINS",
-# "https://youtube.com/@appolitics.official?si=tfyLBLac6q0CLuOo",
-# "https://www.youtube.com/@WildWolfFocus/videos",
-# "https://youtube.com/@WildWolfVijayawada?feature=shared",
-# "https://www.youtube.com/@WildWolfTVBhumi",
-# "https://www.youtube.com/@WildWolfTVHealth",
-# "https://www.youtube.com/@WildWolfLife",
-# "https://www.youtube.com/@WildWolfTrending/videos",
-# "https://www.youtube.com/@SaaguNela",
-# "https://www.youtube.com/@AndhrulaAtmagouravam/videos",
-# "https://www.youtube.com/@YesVCan/videos",
-# "https://www.youtube.com/@Ap_Poitical_Pulse/videos",
-# "https://www.youtube.com/@seemaraja557",
-# "https://www.youtube.com/@SeemaRaja2.O",
-# "https://www.youtube.com/@SEEMARAJASHORTVIDEOS",
-# "https://www.youtube.com/@Team_CBN",
-# "https://youtube.com/@itscbnmark?si=olkOTsTi2Mne8lWp",
-# "https://www.youtube.com/@LeoTodayNews",
-# "https://www.youtube.com/@LeoBuzz",
-# "https://www.youtube.com/@LeoTelangana",
-# "https://youtube.com/@chaitanyaratham1?si=kGiMbzkzccVPrav6",
-# "https://www.youtube.com/@Raitunestham",
-# "https://youtube.com/@journalistvali?si=6mPutxTr5mBxJFBX",
-# "https://www.youtube.com/@Tdpyuvashakthi",
-# "https://www.youtube.com/@TrendNaraLokesh",
-# "https://www.youtube.com/@CycleSena",
-# "https://www.youtube.com/@TrendCBN",
-# "https://www.youtube.com/@tdpsena",
-# "https://www.youtube.com/@RISEOFTDP",
-# "https://www.youtube.com/@metanewstelugu",
-# "https://www.youtube.com/@MetaPlustelugu/videos",
-# "https://www.youtube.com/c/NaraChandrababuNaiduofficial",
-# "https://www.youtube.com/@naralokeshofficial",
-# "https://www.youtube.com/c/TeluguDesamPartyOfficial",
-# "https://www.youtube.com/@andhrachoice",
-# "https://www.youtube.com/@TeamYellowtdp",
-# "https://www.youtube.com/@SyeRaaTelugoda",
-# "https://youtube.com/@tdpdalam?si=xzK1lT4y9ARG3Pmu",
-# "https://www.youtube.com/@ElevenKids6093",
-# "https://youtube.com/@justicechowdharyyy?si=__931Myw21QNUSJd",
-# "https://www.youtube.com/@voiceofandhrapradesh/",
-# "https://www.youtube.com/@journalistreport",
-# "https://www.youtube.com/@JanaChaithanyam",
-# "https://www.youtube.com/@DrPonguruNarayanaOfficial",
-# "https://www.youtube.com/@UstaadTrolls",
-# "https://www.youtube.com/@Andhrula_Galam",
-# "https://www.youtube.com/@tdpfanboy",
-# "https://www.youtube.com/@AaveshamRaja",
-# "https://www.youtube.com/@ItheyOk",
-# "https://www.youtube.com/@JspYuvashakthi",
-# "https://www.youtube.com/@LetsTalkAP",
-# "https://www.youtube.com/@PunchPaduddi",
-# "https://www.youtube.com/@aphatesjagan",
-# "https://www.youtube.com/@PowerTeluguTVChannel",
-# "https://www.youtube.com/@FactsAboutAP",
-# "https://www.youtube.com/@AnnaNTROfficial",
-# "https://www.youtube.com/@TDPSpeakers",
-# "https://youtube.com/@Apvoiceofficial?si=zqn1v8ONu4End0f_",
-# "https://youtube.com/@tdpfangirl?si=w8HaIsDeg_5GIPLi",
-# "https://youtube.com/@anthanthamatrame?si=xLPq5Go9WYZHHcJ4",
-# "https://youtube.com/@Santhubabuyellapu7569?si=1gF3s1Owdke7fu8F",
-# "https://youtube.com/@PoliticalMoji2.0?feature=shared",
-# "https://www.youtube.com/@TheTrendyNewsOfficial",
-# "https://www.youtube.com/@TeluguVaradhi-2024",
-# "https://www.youtube.com/@tdppalakondaofficial",
-# "https://www.youtube.com/@tdpkurupamofficial",
-# "https://www.youtube.com/@TdpParvathipuram.official",
-# "https://www.youtube.com/@Tdpsalurofficial",
-# "https://www.youtube.com/@Tdparakuvalleyofficial",
-# "https://www.youtube.com/@tdppaderuOfficial",
-# "https://www.youtube.com/@tdprampachodavaramofficial",
-# "https://www.youtube.com/@TDPlchchapuramOfficial",
-# "https://www.youtube.com/@Tdppalasaofficial",
-# "https://www.youtube.com/@Tdptekkaliofficial",
-# "https://www.youtube.com/@Tdppathapatnam.official",
-
-# "https://www.youtube.com/@TdpSrikakulamofficial",
-# "https://www.youtube.com/@TdpAmadalavalasaofficial",
-# "https://www.youtube.com/@TdpNarasannapetaofficial",
-# "https://youtube.com/@tdpetcherlaofficial?si=Tlg3ao4kbY2427Al",
-# "https://youtube.com/@tdprajamofficial?si=whclKdflvepaKhaj",
-# "https://youtube.com/@tdpbobbiliofficial?si=C8jG0L0K8U1rW2wv",
-# "https://youtube.com/@tdpcheepurupalliofficial?si=UofhmxCWzsKPLDe8",
-# "https://youtube.com/@tdpgajapathinagaram.official?si=6-eqU5vRufIzi1Rh",
-# "https://youtube.com/@tdpnellimarla-ue9vf?si=IcKJLffuqmuFKkXL",
-# "https://youtube.com/@tdpvizianagaram1982?si=JBLBFsn3kjT7BJwN",
-# "https://www.youtube.com/@TDPChodavaramOfficial",
-# "https://www.youtube.com/@TDPMadugulaOfficial",
-# "https://www.youtube.com/@TDPAnakapalleofficial",
-# "https://www.youtube.com/@TDPPendurthiofficial",
-# "https://www.youtube.com/@TDPYelamanchiliofficial",
-# "https://www.youtube.com/@TDPPayakaraopetaofficial",
-# "https://www.youtube.com/@TdpNarsipatnamofficial",
-# "https://www.youtube.com/@Tdp.Badvel",
-# "https://www.youtube.com/@Tdp.Kadapa",
-# "https://www.youtube.com/@TdpPulivendla142",
-# "https://youtube.com/@tdpkamalapuramac?si=YOO40RkJGXAMofoJ",
-# "https://youtube.com/@tdpjammalamaduguac?si=xk83BhnDUAjoMwFs",
-# "https://www.youtube.com/@TDP.Proddatur",
-# "https://youtube.com/@tdp.mydukur?si=IvBxEyR02fWAuHqg",
-# "https://www.youtube.com/@TDP__Nandikotkur",
-# "https://www.youtube.com/@Tdp.panyam",
-# "https://www.youtube.com/@Tdp.Nandyal",
-# "https://www.youtube.com/@Tdp.Banaganapalle",
-
-# "https://youtube.com/@tdp.kurnool?si=kG5T9UoZpVlBM3_U",
-# "https://youtube.com/@tdppattikonda?si=Lavjen8zsE9vaTQ_",
-# "https://youtube.com/@tdp.kodumur?si=qyDwnOziyfUtwXcn",
-# "https://youtube.com/@tdpyemmiganur-i5g?si=XjAzmwAmzppDoVsA",
-# "https://youtube.com/@tdpmantralayam?si=6cH4SDeclb7_Cp_n",
-# "https://youtube.com/@tdpadoniofficial?si=vQAka_YOEGjzHlfU",
-# "https://youtube.com/@tdpalur?si=dXrrd0-omJnALBom",
-# "https://youtube.com/@singanamalatdp?si=bmbwZNKQk8H8agwt",
-# "https://youtube.com/@kalyandurgtdp?si=vEeuTFLRs2jV_5gj",
-# "https://youtube.com/@rayadurgtdp?si=yrBIiZcI_vayBpqa",
-# "https://www.youtube.com/@Tdp.Tadpatri",
-# "https://www.youtube.com/@TdpUravakonda",
-# "https://youtube.com/@tdpanantapururban?si=G62jab-F1fNWwUx8",
-# "https://www.youtube.com/@TDPGUNTAKAL",
-# "https://youtube.com/@SudhakarTalks",
-# "https://www.youtube.com/@MMTT_2024",
-# "https://youtube.com/@pillajagannadham-420?si=SGaf6ZN7vYjX30a3",
-# "https://www.youtube.com/channel/UCQqnLaxZp51oeIk7085KdSQ",
-# "https://youtube.com/@tdp_connects?si=fscIg1aCKpx1kx-V",
-# "https://youtube.com/@telugupatriot-kn?si=4R5h8Dt-DNSKHnUa",
-# "https://www.youtube.com/@marolokam7",
-# "https://youtube.com/@surthanistudio?si=AkwYV6N4kOZLpxaR",
-# "https://youtube.com/@kiraakrp?si=UUqe4DtJfPi_74iZ",
-# "https://youtube.com/@wallposter_official?si=seX6h-Kz6QktESVC",
-# "https://youtube.com/@isa001?si=MqluecX9pqL-YEJ0",
-# "https://youtube.com/@tdptrends?si=EAoj8CoO_idS-GNc",
-# "https://www.youtube.com/channel/UCW1B5hR0huuIUKQsw1HbAlA",
-# "https://www.youtube.com/channel/UC9nuBez-ClebU7zktWPaXpg",
-# "https://youtube.com/@seemaraja557?si=rU4kTNOztNpNi8A4",
-# "youtube.com/channel/UCFauz0-tMi0XANULkPsxm0w/",
-# "https://youtube.com/@vanara_telugu?si=M_nL1xR68bzAvYUB",
-# "https://youtube.com/@vanarabhakti?si=5tE9m_8EepuPezpW",
-# "https://youtube.com/@vanara_shorts?si=AS3O2Q49p8Kjiwca",
-# "https://youtube.com/@kavya_reports?si=Ze9fSzzj7bulcBQI",
-# "https://www.youtube.com/channel/UCLGo-ZxGLnFMWFeUvUs04bg",
-# "https://www.youtube.com/@PublicVox-m8b",
-# "https://www.youtube.com/@TeluguTrending",
-# "https://www.youtube.com/@bharathimedia",
-# "https://www.youtube.com/@BharathiTVTelugu",
-# "https://www.youtube.com/@TeluguSamajam",
-# "https://youtube.com/@politicaltrolls?si=UpK34EClnNGjlUaD",
-# "https://studio.youtube.com/channel/UCrF-x3Wfdr3wYrcYA0eoNqg",
-# "https://studio.youtube.com/channel/UCaSMGWNV-PU70xq8W5w5BZw",
-# "https://www.youtube.com/@TeluguYuvathaOfficial",
-# "https://www.youtube.com/@TeluguMahilaOfficial",
-# "https://www.youtube.com/@TeluguRaithuOfficial",
-# "https://www.youtube.com/@APTNTUCOfficial",
-# "https://www.youtube.com/@APTNSFOfficial",
-# "https://www.facebook.com/TSNVAPOfficial",
-# "https://www.youtube.com/@HelloAPByeByeYCP_/shorts",
-# "https://www.youtube.com/@TeluguTV24_/shorts",
-# "https://www.youtube.com/channel/UCMxY_NpHsPuoA6fphA84U7w",
-# "https://www.youtube.com/channel/UCd4h_MoOoEGF4TTsF2KXjEw",
-# "https://www.youtube.com/channel/UC6EyS-RlziC3C_nIQX6IXAA",
-# "https://www.youtube.com/channel/UCVgZ1ku8MeDQQnM4kfjaqJQ",
-# "https://www.youtube.com/channel/UC5MOlwPyGbeeCoarq1EkSJQ",
-# "https://www.youtube.com/channel/UCxuaTMzPXw0RwGxQeCZNN5A",
-# "https://www.youtube.com/channel/UCWSsi4xeyYoJ2L9tA7glJQg",
-# "https://www.youtube.com/@CBNUpdats-c5g",
-# "https://www.youtube.com/@SudhakarShorts007",
-# "https://www.youtube.com/@AnalystSudhakar",
-# "https://www.youtube.com/@politicaltrolls",
-# "https://www.youtube.com/@politicaltrolls",
-# "https://www.youtube.com/@DynamicAndhra",
-# "https://www.youtube.com/@CBNFORTHEBETTERFUTURE",
-# "https://www.youtube.com/@NaraLokeshUpdates",
-# "https://www.youtube.com/@CBNFORTHEBETTERFUTURE",
-# "https://www.youtube.com/@s5politicsnewstelugu",
-# "https://www.youtube.com/@TrendsetterTelugu",
-# "https://www.youtube.com/@rajaktalks9",
-# "https://www.youtube.com/@rvmc893",
-# "https://youtube.com/@DailyLooksOfficial?si=CEQx3-2JeC7vsFwY",
-# "https://youtube.com/@sreenitv?feature=shared",
-# "https://www.youtube.com/@MSRTV",
-# "https://youtube.com/@pointoutnewsexclusive?si=j9iPlUWvACP-MVDD",
-# "https://youtube.com/@POINTOUTNEWSTELUGU?si=KlWeHqM7lMOpxEMI",
-# "https://youtube.com/@Bestnewstelugu?si=0pd8EwYUgaxudCVH..",
-# "https://www.youtube.com/@janavahini-po6eu",
-# "https://www.youtube.com/@cinemapower79",
-# "https://www.youtube.com/@PrajaAdda",
-# "https://www.youtube.com/@ManaChaitanyam-fl2fc",
-
+"https://www.youtube.com/@teamlokesh4698",
+"https://www.youtube.com/c/AmaravatiVoice",
+"https://www.youtube.com/@wefor_CBN",
+"https://www.youtube.com/@leoentertainmentchannel/",
+"https://www.youtube.com/@tdpwhatsappstatus4135/",
+"https://www.youtube.com/@TDPPunch",
+"https://www.youtube.com/c/CBNFORTHEBETTERNATION",
+"https://youtube.com/@dalapathiln?si=RkGRBf7Voae1gtN5",
+"https://www.youtube.com/@Okeokkadu_cbn",
+"https://www.youtube.com/c/LNFORYUVA",
+"https://www.youtube.com/@Maheshmedia/",
+"https://www.youtube.com/@WildWolfTelugu/about",
+"https://www.youtube.com/c/WeSupportTDP",
+"https://www.youtube.com/@CBNFORPEOPLE/",
+"https://www.youtube.com/@OpenTalkTeam/about",
+"https://www.youtube.com/c/TheLeoNews/",
+"https://youtube.com/@idhicorrect?si=kETdWdH0lo91N-iB",
+"https://www.youtube.com/@massmama3679/",
+"https://www.youtube.com/@meowmeowpilli7/about",
+"https://www.youtube.com/@PopcornMediaofficial/about",
+"https://www.youtube.com/@RocketTeluguNews/a",
+"https://www.youtube.com/@TakeOneMedia99/",
+"https://www.youtube.com/c/TDPActivist",
+"https://www.youtube.com/@ThinkAndhra",
+"https://www.youtube.com/@ThinkTollywood/videos",
+"https://www.youtube.com/@TDP_YOUTH_WARRIORS/",
+"https://www.youtube.com/@tdp_students",
+"https://youtube.com/@andhraism-q7i?si=bqlYHybCWPxuhYZo",
+"https://youtube.com/@tdpat175?si=3bHR1z1GrL3Y8JlP",
+"https://www.youtube.com/c/VoiceofTDP9",
+"https://www.youtube.com/@peopleopinion2024",
+"https://www.youtube.com/@tdpyuva675/videos",
+"https://www.youtube.com/@bigbosscbn2059",
+"https://www.youtube.com/@FusuCk",
+"https://www.youtube.com/@pinkomedia",
+"https://www.youtube.com/@balayyapunch",
+"https://www.youtube.com/@WildWolfDigi",
+"https://www.youtube.com/@JaiiTdp",
+"https://www.youtube.com/@vanaramedia_official",
+"https://www.youtube.com/@vanara_politics",
+"https://www.youtube.com/@vanara_media",
+"https://youtube.com/@GangTdp",
+"https://youtube.com/@sharechey_mawa?si=TXA4-Hq9fe8vHtWE",
+"https://www.youtube.com/@AbbaKamalHassanYT",
+"https://www.youtube.com/@AlladistaTrolls-N",
+"https://www.youtube.com/@wearetdp/featured",
+"https://www.youtube.com/@MemeRaPushpa",
+"https://www.youtube.com/@MemesBandi",
+"https://youtube.com/@sarcasticsadhana?si=scC-PAzkSGK9hQsF",
+"https://youtube.com/@SuperSubbuOfficial",
+"https://youtube.com/@IamwithNCBN",
+"https://youtube.com/@thaggedheley9?si=P6VEKIaT2ZhoUWsi",
+"https://www.youtube.com/@myfirstvoteforcbn",
+"https://www.youtube.com/@Janagalam",
+"https://www.youtube.com/@TDPforpeople",
+"https://www.youtube.com/@taja3046",
+"https://youtube.com/@apnextcm-jo2ee?si=tAu2YsPTEJPQtYYZ",
+"https://youtube.com/@jananadi-2024?si=bSx9zwBCE9Sz9wC1",
+"https://youtube.com/@tdpcommunity.official?si=tZsQyIkLP9HUOOpB",
+"https://www.youtube.com/@appolitics_2024/featured",
+"https://www.youtube.com/channel/UC8VZtBNbrLgrazQF-SrfODA",
+"https://www.youtube.com/@nayapolitics.Official",
+"https://www.youtube.com/@peoplemedia-en9fy/featured",
+"https://www.youtube.com/@yuvagalamofficial/featured",
+"https://www.youtube.com/@cbnfollower9999",
+"https://www.youtube.com/@tdpkutumbam9731",
+"https://www.youtube.com/@CbnTheLegend2024",
+"https://youtube.com/@tdptrends.official?si=272ubF_n5Qt6qFxj",
+"https://www.youtube.com/@tdpat_175",
+"https://youtube.com/@poweroftdp.official?si=dLBh1yZuAK2FpbAb",
+"https://www.youtube.com/@votefortdp2024",
+"https://www.youtube.com/@Telugu_Sena",
+"https://www.youtube.com/@news24.telugu",
+"https://www.youtube.com/@teamlokesh4698",
+"https://www.youtube.com/@thinkandvote.",
+"https://www.youtube.com/@TeluguSena.Officia",
+"https://www.youtube.com/@TeluguSena2024",
+"https://www.youtube.com/@TeamTdp-xd6yf",
+"https://www.youtube.com/@ChaitanyaRadhamTdp",
+"https://www.youtube.com/@TDPYOUTH963",
+"https://youtube.com/@yuvasena_tdp?si=DZ-tE57MiwhudhT1",
+"https://youtube.com/@tillu_trolls?si=-JFgurphZKlcYifU",
+"https://www.youtube.com/@PointBlankTelugu",
+"https://www.youtube.com/@PointBlankTvDigital",
+"https://www.youtube.com/@PillaluRaMeeru3",
+"https://youtube.com/@imwithlokesh?si=YReJr_9xJHIFHGAm",
+"https://youtube.com/@localpolitics-z8d?si=3aeSOhWWltD3NX4R",
+"https://www.youtube.com/@vamsikgottipati",
+"https://youtube.com/@publicvision-n5n?si=hbRKx9tLXvIgigH_",
+"https://www.youtube.com/channel/UCGueOBvBu3N3CuSZDB1jrJg",
+"https://www.youtube.com/@politicalikon",
+"https://youtube.com/@crazykanna0?si=GpINjjsh4FdTnG9D",
+"https://www.youtube.com/channel/UCX0xQCu0wNNPvka6edHNRew",
+"https://youtube.com/@publicpulse-ap?si=gt2tEFknqCQT7m-X",
+"https://youtube.com/@ap_talks..0?si=crLxvz1xKM39yyDq]",
+"https://www.youtube.com/@BANKUSEENU",
+"https://youtube.com/@jaitelugudesam2029?si=xMHwoSNcRmW59Zai",
+"https://youtube.com/@letstalk-telugu?si=JOZvtktBq9ITxHIe",
+"https://youtube.com/@tdpera?feature=shared",
+"https://www.youtube.com/@sivazee/videos",
+"https://www.youtube.com/channel/UCJCsh1Th4Rze_orin4gzkRg",
+"https://www.youtube.com/channel/UC3MpAScuECXdkBp0Oks2ouA",
+"https://www.youtube.com/@tdpstatus",
+"https://www.youtube.com/@Jagan730FakePromises",
+"https://www.youtube.com/@We_For_CBN",
+"https://www.youtube.com/@lokeshforpeople.29",
+"https://youtube.com/@teluguvaradhi.official?si=yzelqJ1cVLsOUAaR",
+"https://www.youtube.com/@RMSNEWS7",
+"https://www.youtube.com/@TDP_LOINS",
+"https://youtube.com/@rayadurgtdp?si=yrBIiZcI_vayBpqa",
+"https://www.youtube.com/@Tdp.Tadpatri",
+"https://www.youtube.com/@TdpUravakonda",
+"https://youtube.com/@tdpanantapururban?si=G62jab-F1fNWwUx8",
+"https://www.youtube.com/@TDPGUNTAKAL",
+"https://youtube.com/@SudhakarTalks",
+"https://www.youtube.com/@MMTT_2024",
+"https://youtube.com/@pillajagannadham-420?si=SGaf6ZN7vYjX30a3",
+"https://www.youtube.com/channel/UCQqnLaxZp51oeIk7085KdSQ",
+"https://youtube.com/@tdp_connects?si=fscIg1aCKpx1kx-V",
+"https://youtube.com/@telugupatriot-kn?si=4R5h8Dt-DNSKHnUa",
+"https://www.youtube.com/@marolokam7",
+"https://youtube.com/@surthanistudio?si=AkwYV6N4kOZLpxaR",
+"https://youtube.com/@kiraakrp?si=UUqe4DtJfPi_74iZ",
+"https://youtube.com/@wallposter_official?si=seX6h-Kz6QktESVC",
+"https://youtube.com/@isa001?si=MqluecX9pqL-YEJ0",
+"https://youtube.com/@tdptrends?si=EAoj8CoO_idS-GNc",
+"https://www.youtube.com/channel/UCW1B5hR0huuIUKQsw1HbAlA",
+"https://www.youtube.com/channel/UC9nuBez-ClebU7zktWPaXpg",
+"https://youtube.com/@seemaraja557?si=rU4kTNOztNpNi8A4",
+"youtube.com/channel/UCFauz0-tMi0XANULkPsxm0w/",
+"https://youtube.com/@vanara_telugu?si=M_nL1xR68bzAvYUB",
+"https://youtube.com/@vanarabhakti?si=5tE9m_8EepuPezpW",
+"https://youtube.com/@vanara_shorts?si=AS3O2Q49p8Kjiwca",
+"https://youtube.com/@kavya_reports?si=Ze9fSzzj7bulcBQI",
+"https://www.youtube.com/channel/UCLGo-ZxGLnFMWFeUvUs04bg",
+"https://www.youtube.com/@PublicVox-m8b",
+"https://www.youtube.com/@TeluguTrending",
+"https://www.youtube.com/@bharathimedia",
+"https://www.youtube.com/@BharathiTVTelugu",
+"https://www.youtube.com/@TeluguSamajam",
+"https://youtube.com/@politicaltrolls?si=UpK34EClnNGjlUaD",
+"https://studio.youtube.com/channel/UCrF-x3Wfdr3wYrcYA0eoNqg",
+"https://studio.youtube.com/channel/UCaSMGWNV-PU70xq8W5w5BZw",
+"https://www.youtube.com/@TeluguYuvathaOfficial",
+"https://www.youtube.com/@TeluguMahilaOfficial",
+"https://www.youtube.com/@TeluguRaithuOfficial",
+"https://www.youtube.com/@APTNTUCOfficial",
+"https://www.youtube.com/@APTNSFOfficial",
+"https://www.facebook.com/TSNVAPOfficial",
+"https://www.youtube.com/@HelloAPByeByeYCP_/shorts",
+"https://www.youtube.com/@TeluguTV24_/shorts",
+"https://www.youtube.com/channel/UCMxY_NpHsPuoA6fphA84U7w",
+"https://www.youtube.com/channel/UCd4h_MoOoEGF4TTsF2KXjEw",
+"https://www.youtube.com/channel/UC6EyS-RlziC3C_nIQX6IXAA",
+"https://www.youtube.com/channel/UCVgZ1ku8MeDQQnM4kfjaqJQ",
+"https://www.youtube.com/channel/UC5MOlwPyGbeeCoarq1EkSJQ",
+"https://www.youtube.com/channel/UCxuaTMzPXw0RwGxQeCZNN5A",
+"https://www.youtube.com/channel/UCWSsi4xeyYoJ2L9tA7glJQg",
+"https://www.youtube.com/@CBNUpdats-c5g",
+"https://www.youtube.com/@SudhakarShorts007",
+"https://www.youtube.com/@AnalystSudhakar",
+"https://www.youtube.com/@politicaltrolls",
+"https://www.youtube.com/@politicaltrolls",
+"https://www.youtube.com/@DynamicAndhra",
+"https://www.youtube.com/@CBNFORTHEBETTERFUTURE",
+"https://www.youtube.com/@NaraLokeshUpdates",
+"https://www.youtube.com/@CBNFORTHEBETTERFUTURE",
+"https://www.youtube.com/@s5politicsnewstelugu",
+"https://www.youtube.com/@TrendsetterTelugu",
+"https://www.youtube.com/@rajaktalks9",
+"https://www.youtube.com/@rvmc893",
+"https://youtube.com/@DailyLooksOfficial?si=CEQx3-2JeC7vsFwY",
+"https://youtube.com/@sreenitv?feature=shared",
+"https://www.youtube.com/@MSRTV",
+"https://youtube.com/@pointoutnewsexclusive?si=j9iPlUWvACP-MVDD",
+"https://youtube.com/@POINTOUTNEWSTELUGU?si=KlWeHqM7lMOpxEMI",
+"https://youtube.com/@Bestnewstelugu?si=0pd8EwYUgaxudCVH..",
+"https://www.youtube.com/@janavahini-po6eu",
+"https://www.youtube.com/@cinemapower79",
+"https://www.youtube.com/@PrajaAdda",
+"https://www.youtube.com/@ManaChaitanyam-fl2fc",
 "https://www.youtube.com/@AADYATVTELUGU",
 "https://www.youtube.com/@aadyatalks",
 "https://www.youtube.com/@AADYAplus",
@@ -364,82 +250,194 @@ CHANNEL_URLS = [
 "https://www.youtube.com/@APPrajaVaradhi-lf2bp",
 "https://www.youtube.com/@poweroftdp",
 "https://www.youtube.com/@Mana_Times",
-# "https://www.youtube.com/@NavyandhraLive",
-# "https://www.youtube.com/@Mana_Circle",
-# "https://www.youtube.com/@Mixed-Channel",
-# "https://www.youtube.com/@manacinematalks",
-# "https://www.youtube.com/@JANAVARADHI",
-# "https://www.youtube.com/@Mana_Politics_Live",
-# "https://www.youtube.com/@Mana_Balam",
-# "https://youtube.com/@123Nellore",
-# "https://youtube.com/@ntimesnews?feature=shared",
-# "https://youtube.com/@channel9hd?si=f65agvV6mJ9dOaQv",
-# "https://youtube.com/@NDNNewsLive",
-# "https://www.youtube.com/@TV24Studio",
-# "https://www.youtube.com/@KavyasMedia",
-# "https://www.youtube.com/@harshaguntupallivlogs5373",
-# "https://www.youtube.com/@Kasalaahmed",
-# "https://www.youtube.com/@pjnewsworld",
-# "https://youtube.com/@ettelugunews?si=72byJ2nE9iKnp968",
-# "https://www.youtube.com/@NationalistHub",
-# "https://www.youtube.com/@NHTV24X7",
-# "https://www.youtube.com/@TreeMediaNews",
-# "https://www.youtube.com/@suvarnamediaexclusive",
-# "https://www.youtube.com/@dialnewsinfo",
-# "https://www.youtube.com/@PoliticalLine",
-# "https://www.youtube.com/@GharshanaMedia",
-# "https://www.youtube.com/@GharshanaMediaBvr",
-# "https://www.youtube.com/@News25Channel/",
-# "https://www.youtube.com/@TeluguTodayOfficial",
-# "https://www.youtube.com/@SasiMedia",
-# "https://www.youtube.com/@AndhraVoice",
-# "https://www.youtube.com/@lokeshpadayatra",
-# "https://www.youtube.com/@GaganaMedia/",
-# "https://www.youtube.com/@RajaneethiLive",
-# "https://www.youtube.com/@ChetanaMedia",
-# "https://www.youtube.com/@MAHASENA-Rajesh",
-# "https://www.youtube.com/@varahinews",
-# "https://www.youtube.com/@Filmylookslive",
-# "https://youtube.com/@DailyLooksOfficial?si=CEQx3-2JeC7vsFwY",
-# "https://youtube.com/@sreenitv?feature=shared",
-# "https://www.youtube.com/@MSRTV",
-# "https://www.youtube.com/@TreeMediaNews",
-# "https://www.youtube.com/@suvarnamediaexclusive",
-# "https://www.youtube.com/@dialnewsinfo",
-# "https://www.youtube.com/@jaganfailedCM",
-# "https://www.youtube.com/@PoliticalLine",
-# "https://www.youtube.com/@TeluguPopularTV",
-# "https://www.youtube.com/@PopularTVChannel",
-# "https://www.youtube.com/@telugudaily",
-# "https://www.youtube.com/@WallPost/videos",
-# "https://youtube.com/@KiranTV2022?feature=shared",
-# "https://youtube.com/@KiranTVNews?feature=shared",
-# "https://youtube.com/@LifeAndhraOfficial",
-# "https://www.youtube.com/@BadudeBadudus/",
-# "https://www.youtube.com/@politicalmojitelugu",
-# "https://youtube.com/@TdpFighters",
-# "https://www.youtube.com/@apneedscbn8558/",
-# "https://youtube.com/@Tdptrends",
-# "https://www.youtube.com/@ITDPNALLARI",
-# "https://www.youtube.com/@nijamAnna/about",
-# "https://www.youtube.com/@DHONEITDPSUBBAREDDYANNAYUVASEN",
-# "https://www.youtube.com/@aadhyamedia388",
-# "https://www.youtube.com/@AvighnaMedia/videos",
-# "https://www.youtube.com/@TeluguStates",
-# "https://www.youtube.com/@AvighnaPolitical",
-# "https://www.youtube.com/channel/UCKU3y2fHgCUBqE6n9fCbNrg/videos",
-# "https://www.youtube.com/@TeluguPopularTV",
-# "https://www.youtube.com/@PopularTVChannel",
-# "http://www.youtube.com/@Vocal_of_Local",
-# "https://www.youtube.com/@TEAM_LN",
-# "https://www.youtube.com/@YuvaSena2024",
-# "https://www.youtube.com/@Santhubabu2.0-rd7dp",
-# "https://www.youtube.com/@KirikiriTvchannel",
-# "https://www.youtube.com/@BhavishyathukuGuarantee",
-# "https://www.youtube.com/@byebyejaganbyebyejagan",
-# "https://www.youtube.com/@prajavedika3640",
-# "https://www.youtube.com/@psychopovalicycleravali",
-# "https://youtube.com/@YuvaGalamln?si=rWk-Imet6D9LMJYJ"
+"https://www.youtube.com/@NavyandhraLive",
+"https://www.youtube.com/@Mana_Circle",
+"https://www.youtube.com/@Mixed-Channel",
+"https://www.youtube.com/@manacinematalks",
+"https://www.youtube.com/@JANAVARADHI",
+"https://www.youtube.com/@Mana_Politics_Live",
+"https://www.youtube.com/@Mana_Balam",
+"https://youtube.com/@123Nellore",
+"https://youtube.com/@ntimesnews?feature=shared",
+"https://youtube.com/@channel9hd?si=f65agvV6mJ9dOaQv",
+"https://youtube.com/@NDNNewsLive",
+"https://www.youtube.com/@TV24Studio",
+"https://www.youtube.com/@KavyasMedia",
+"https://www.youtube.com/@harshaguntupallivlogs5373",
+"https://www.youtube.com/@Kasalaahmed",
+"https://www.youtube.com/@pjnewsworld",
+"https://youtube.com/@ettelugunews?si=72byJ2nE9iKnp968",
+"https://www.youtube.com/@NationalistHub",
+"https://www.youtube.com/@NHTV24X7",
+"https://www.youtube.com/@TreeMediaNews",
+"https://www.youtube.com/@suvarnamediaexclusive",
+"https://www.youtube.com/@dialnewsinfo",
+"https://www.youtube.com/@PoliticalLine",
+"https://www.youtube.com/@GharshanaMedia",
+"https://www.youtube.com/@GharshanaMediaBvr",
+"https://www.youtube.com/@News25Channel/",
+"https://www.youtube.com/@TeluguTodayOfficial",
+"https://www.youtube.com/@SasiMedia",
+"https://www.youtube.com/@AndhraVoice",
+"https://www.youtube.com/@lokeshpadayatra",
+"https://www.youtube.com/@GaganaMedia/",
+"https://www.youtube.com/@RajaneethiLive",
+"https://www.youtube.com/@ChetanaMedia",
+"https://www.youtube.com/@MAHASENA-Rajesh",
+"https://www.youtube.com/@varahinews",
+"https://www.youtube.com/@Filmylookslive",
+"https://youtube.com/@DailyLooksOfficial?si=CEQx3-2JeC7vsFwY",
+"https://youtube.com/@sreenitv?feature=shared",
+"https://www.youtube.com/@MSRTV",
+"https://www.youtube.com/@TreeMediaNews",
+"https://www.youtube.com/@suvarnamediaexclusive",
+"https://www.youtube.com/@dialnewsinfo",
+"https://youtube.com/@appolitics.official?si=tfyLBLac6q0CLuOo",
+"https://www.youtube.com/@WildWolfFocus/videos",
+"https://youtube.com/@WildWolfVijayawada?feature=shared",
+"https://www.youtube.com/@WildWolfTVBhumi",
+"https://www.youtube.com/@WildWolfTVHealth",
+"https://www.youtube.com/@WildWolfLife",
+"https://www.youtube.com/@WildWolfTrending/videos",
+"https://www.youtube.com/@SaaguNela",
+"https://www.youtube.com/@AndhrulaAtmagouravam/videos",
+"https://www.youtube.com/@YesVCan/videos",
+"https://www.youtube.com/@Ap_Poitical_Pulse/videos",
+"https://www.youtube.com/@seemaraja557",
+"https://www.youtube.com/@SeemaRaja2.O",
+"https://www.youtube.com/@SEEMARAJASHORTVIDEOS",
+"https://www.youtube.com/@Team_CBN",
+"https://youtube.com/@itscbnmark?si=olkOTsTi2Mne8lWp",
+"https://www.youtube.com/@LeoTodayNews",
+"https://www.youtube.com/@LeoBuzz",
+"https://www.youtube.com/@LeoTelangana",
+"https://youtube.com/@chaitanyaratham1?si=kGiMbzkzccVPrav6",
+"https://www.youtube.com/@Raitunestham",
+"https://youtube.com/@journalistvali?si=6mPutxTr5mBxJFBX",
+"https://www.youtube.com/@Tdpyuvashakthi",
+"https://www.youtube.com/@TrendNaraLokesh",
+"https://www.youtube.com/@CycleSena",
+"https://www.youtube.com/@TrendCBN",
+"https://www.youtube.com/@tdpsena",
+"https://www.youtube.com/@RISEOFTDP",
+"https://www.youtube.com/@metanewstelugu",
+"https://www.youtube.com/@MetaPlustelugu/videos",
+"https://www.youtube.com/c/NaraChandrababuNaiduofficial",
+"https://www.youtube.com/@naralokeshofficial",
+"https://www.youtube.com/c/TeluguDesamPartyOfficial",
+"https://www.youtube.com/@andhrachoice",
+"https://www.youtube.com/@TeamYellowtdp",
+"https://www.youtube.com/@SyeRaaTelugoda",
+"https://youtube.com/@tdpdalam?si=xzK1lT4y9ARG3Pmu",
+"https://www.youtube.com/@ElevenKids6093",
+"https://youtube.com/@justicechowdharyyy?si=__931Myw21QNUSJd",
+"https://www.youtube.com/@voiceofandhrapradesh/",
+"https://www.youtube.com/@journalistreport",
+"https://www.youtube.com/@JanaChaithanyam",
+"https://www.youtube.com/@DrPonguruNarayanaOfficial",
+"https://www.youtube.com/@UstaadTrolls",
+"https://www.youtube.com/@Andhrula_Galam",
+"https://www.youtube.com/@tdpfanboy",
+"https://www.youtube.com/@AaveshamRaja",
+"https://www.youtube.com/@ItheyOk",
+"https://www.youtube.com/@JspYuvashakthi",
+"https://www.youtube.com/@LetsTalkAP",
+"https://www.youtube.com/@PunchPaduddi",
+"https://www.youtube.com/@aphatesjagan",
+"https://www.youtube.com/@PowerTeluguTVChannel",
+"https://www.youtube.com/@FactsAboutAP",
+"https://www.youtube.com/@AnnaNTROfficial",
+"https://www.youtube.com/@TDPSpeakers",
+"https://youtube.com/@Apvoiceofficial?si=zqn1v8ONu4End0f_",
+"https://youtube.com/@tdpfangirl?si=w8HaIsDeg_5GIPLi",
+"https://youtube.com/@anthanthamatrame?si=xLPq5Go9WYZHHcJ4",
+"https://youtube.com/@Santhubabuyellapu7569?si=1gF3s1Owdke7fu8F",
+"https://youtube.com/@PoliticalMoji2.0?feature=shared",
+"https://www.youtube.com/@TheTrendyNewsOfficial",
+"https://www.youtube.com/@TeluguVaradhi-2024",
+"https://www.youtube.com/@tdppalakondaofficial",
+"https://www.youtube.com/@tdpkurupamofficial",
+"https://www.youtube.com/@TdpParvathipuram.official",
+"https://www.youtube.com/@Tdpsalurofficial",
+"https://www.youtube.com/@Tdparakuvalleyofficial",
+"https://www.youtube.com/@tdppaderuOfficial",
+"https://www.youtube.com/@tdprampachodavaramofficial",
+"https://www.youtube.com/@TDPlchchapuramOfficial",
+"https://www.youtube.com/@Tdppalasaofficial",
+"https://www.youtube.com/@Tdptekkaliofficial",
+"https://www.youtube.com/@Tdppathapatnam.official",
+"https://www.youtube.com/@TdpSrikakulamofficial",
+"https://www.youtube.com/@TdpAmadalavalasaofficial",
+"https://www.youtube.com/@TdpNarasannapetaofficial",
+"https://youtube.com/@tdpetcherlaofficial?si=Tlg3ao4kbY2427Al",
+"https://youtube.com/@tdprajamofficial?si=whclKdflvepaKhaj",
+"https://youtube.com/@tdpbobbiliofficial?si=C8jG0L0K8U1rW2wv",
+"https://youtube.com/@tdpcheepurupalliofficial?si=UofhmxCWzsKPLDe8",
+"https://youtube.com/@tdpgajapathinagaram.official?si=6-eqU5vRufIzi1Rh",
+"https://youtube.com/@tdpnellimarla-ue9vf?si=IcKJLffuqmuFKkXL",
+"https://youtube.com/@tdpvizianagaram1982?si=JBLBFsn3kjT7BJwN",
+"https://www.youtube.com/@TDPChodavaramOfficial",
+"https://www.youtube.com/@TDPMadugulaOfficial",
+"https://www.youtube.com/@TDPAnakapalleofficial",
+"https://www.youtube.com/@TDPPendurthiofficial",
+"https://www.youtube.com/@TDPYelamanchiliofficial",
+"https://www.youtube.com/@TDPPayakaraopetaofficial",
+"https://www.youtube.com/@TdpNarsipatnamofficial",
+"https://www.youtube.com/@Tdp.Badvel",
+"https://www.youtube.com/@Tdp.Kadapa",
+"https://www.youtube.com/@TdpPulivendla142",
+"https://youtube.com/@tdpkamalapuramac?si=YOO40RkJGXAMofoJ",
+"https://youtube.com/@tdpjammalamaduguac?si=xk83BhnDUAjoMwFs",
+"https://www.youtube.com/@TDP.Proddatur",
+"https://youtube.com/@tdp.mydukur?si=IvBxEyR02fWAuHqg",
+"https://www.youtube.com/@TDP__Nandikotkur",
+"https://www.youtube.com/@Tdp.panyam",
+"https://www.youtube.com/@Tdp.Nandyal",
+"https://www.youtube.com/@Tdp.Banaganapalle",
+"https://youtube.com/@tdp.kurnool?si=kG5T9UoZpVlBM3_U",
+"https://youtube.com/@tdppattikonda?si=Lavjen8zsE9vaTQ_",
+"https://youtube.com/@tdp.kodumur?si=qyDwnOziyfUtwXcn",
+"https://youtube.com/@tdpyemmiganur-i5g?si=XjAzmwAmzppDoVsA",
+"https://youtube.com/@tdpmantralayam?si=6cH4SDeclb7_Cp_n",
+"https://youtube.com/@tdpadoniofficial?si=vQAka_YOEGjzHlfU",
+"https://youtube.com/@tdpalur?si=dXrrd0-omJnALBom",
+"https://youtube.com/@singanamalatdp?si=bmbwZNKQk8H8agwt",
+"https://youtube.com/@kalyandurgtdp?si=vEeuTFLRs2jV_5gj",
+"https://www.youtube.com/@jaganfailedCM",
+"https://www.youtube.com/@PoliticalLine",
+"https://www.youtube.com/@TeluguPopularTV",
+"https://www.youtube.com/@PopularTVChannel",
+"https://www.youtube.com/@telugudaily",
+"https://www.youtube.com/@WallPost/videos",
+"https://youtube.com/@KiranTV2022?feature=shared",
+"https://youtube.com/@KiranTVNews?feature=shared",
+"https://youtube.com/@LifeAndhraOfficial",
+"https://www.youtube.com/@BadudeBadudus/",
+"https://www.youtube.com/@politicalmojitelugu",
+"https://youtube.com/@TdpFighters",
+"https://www.youtube.com/@apneedscbn8558/",
+"https://youtube.com/@Tdptrends",
+"https://www.youtube.com/@ITDPNALLARI",
+"https://www.youtube.com/@nijamAnna/about",
+"https://www.youtube.com/@DHONEITDPSUBBAREDDYANNAYUVASEN",
+"https://www.youtube.com/@aadhyamedia388",
+"https://www.youtube.com/@AvighnaMedia/videos",
+"https://www.youtube.com/@TeluguStates",
+"https://www.youtube.com/@AvighnaPolitical",
+"https://www.youtube.com/channel/UCKU3y2fHgCUBqE6n9fCbNrg/videos",
+"https://www.youtube.com/@TeluguPopularTV",
+"https://www.youtube.com/@PopularTVChannel",
+"http://www.youtube.com/@Vocal_of_Local",
+"https://www.youtube.com/@TEAM_LN",
+"https://www.youtube.com/@YuvaSena2024",
+"https://www.youtube.com/@Santhubabu2.0-rd7dp",
+"https://www.youtube.com/@KirikiriTvchannel",
+"https://www.youtube.com/@BhavishyathukuGuarantee",
+"https://www.youtube.com/@byebyejaganbyebyejagan",
+"https://www.youtube.com/@prajavedika3640",
+"https://www.youtube.com/@psychopovalicycleravali",
+"https://youtube.com/@YuvaGalamln?si=rWk-Imet6D9LMJYJ"
+
 ]
 
 API_BASE = "https://www.googleapis.com/youtube/v3"
@@ -447,7 +445,8 @@ BATCH_SIZE = 50
 DB_BATCH_SIZE = 500
 
 load_dotenv()
-MONGO_URL = os.getenv("ATTENDANCE_MONGO_URL")
+MONGO_URL = "mongodb+srv://akhilamerugu:root@youtube.b3wyvwo.mongodb.net/mydb?authSource=admin&retryWrites=true&w=majority"
+SECOND_MONGO_URL = "mongodb+srv://akhila:root@youtube1.bqto0ug.mongodb.net/?appName=youtube1"
 
 
 
@@ -605,35 +604,48 @@ class VideoDataProcessor:
     """Process video data"""
     
     @staticmethod
-    def fetch_video_ids(playlist_id: str, api_client: YouTubeAPI, max_pages: Optional[int] = None) -> List[str]:
-        """Fetch all video IDs from a playlist"""
+    def fetch_video_ids(playlist_id: str, api_client: YouTubeAPI, max_pages: Optional[int] = None, start_date: Optional[datetime] = None) -> List[str]:
+        """Fetch all video IDs from a playlist since a start date"""
         video_ids = []
         next_page_token = None
         page_count = 0
         
-        while True:
+        stop_fetching = False
+        while not stop_fetching:
             page_count += 1
             params = {
-                "part": "contentDetails",
+                "part": "contentDetails,snippet",
                 "playlistId": playlist_id,
                 "maxResults": BATCH_SIZE
             }
             
             if next_page_token:
                 params["pageToken"] = next_page_token
-            
+
             data = api_client.call_api("playlistItems", params)
             
             for item in data.get("items", []):
+                if start_date and 'snippet' in item and 'publishedAt' in item['snippet']:
+                    published_at_str = item['snippet']['publishedAt']
+                    published_at_dt = datetime.fromisoformat(published_at_str.replace('Z', '+00:00'))
+                    
+                    if published_at_dt < start_date:
+                        stop_fetching = True
+                        break
+
                 if video_id := item.get("contentDetails", {}).get("videoId"):
                     video_ids.append(video_id)
             
+            if stop_fetching:
+                logger.info(f"Reached videos older than {start_date.date()}, stopping pagination for this playlist.")
+                break
+
             logger.info(f"Playlist page {page_count} — collected {len(video_ids)} IDs")
             
             next_page_token = data.get("nextPageToken")
             if not next_page_token or (max_pages and page_count >= max_pages):
                 break
-            
+
             time.sleep(0.1) 
         
         return video_ids
@@ -709,8 +721,8 @@ class DatabaseManager:
     
     def __init__(self):
         self.client = MongoClient(MONGO_URL)
-        self.db = self.client['youtube_db']
-        self.collection = self.db['daily_data']
+        self.db = self.client['youtube']
+        self.collection = self.db['dailyscraping']
     
     def ensure_tables(self):
         """Create indexes if they don't exist"""
@@ -818,6 +830,30 @@ def calculate_channel_aggregates(videos: List[Dict[str, Any]]) -> pd.DataFrame:
     
     return agg
 
+def fetch_data_from_db(uri: str) -> List[Dict[str, Any]]:
+    """Fetch all video data from a specific MongoDB cluster"""
+    try:
+        client = MongoClient(uri)
+        db = client['youtube']
+        collection = db['dailyscraping']
+        data = list(collection.find({}, {"_id": 0}))
+        client.close()
+        logger.info(f"Fetched {len(data)} records from {uri.split('@')[1].split('/')[0]}")
+        return data
+    except Exception as e:
+        logger.error(f"Failed to fetch data from {uri}: {e}")
+        return []
+
+def fetch_data_from_clusters_parallel() -> List[Dict[str, Any]]:
+    """Fetch data from both clusters in parallel"""
+    uris = [MONGO_URL, SECOND_MONGO_URL]
+    all_data = []
+    with ThreadPoolExecutor(max_workers=len(uris)) as executor:
+        futures = [executor.submit(fetch_data_from_db, uri) for uri in uris]
+        for future in as_completed(futures):
+            all_data.extend(future.result())
+    return all_data
+
 def main():
     """Main execution function"""
     start_time = time.time()
@@ -835,7 +871,9 @@ def main():
     all_videos = []
     processed_channels = []
     
-    
+    # Fetch videos from the last 24 hours (effectively previous day if run at midnight)
+    start_date_limit = datetime.now(timezone.utc) - timedelta(days=1)
+
     for channel_url in CHANNEL_URLS:
         try:
             logger.info(f"Processing channel: {channel_url}")
@@ -853,8 +891,8 @@ def main():
             logger.info(f"Uploads playlist: {playlist_id}")
             
            
-            video_ids = video_processor.fetch_video_ids(playlist_id, api_client)
-            logger.info(f"Found {len(video_ids)} videos")
+            video_ids = video_processor.fetch_video_ids(playlist_id, api_client, start_date=start_date_limit)
+            logger.info(f"Found {len(video_ids)} videos since {start_date_limit.date()}")
             
             if not video_ids:
                 logger.warning("No videos found, skipping")
@@ -897,22 +935,36 @@ def main():
             logger.error(f"Error processing channel {channel_url}: {e}", exc_info=True)
             continue
     
-    if not all_videos:
-        logger.error("No video data collected")
+    # Fetch historical data from 2 clusters in parallel
+    logger.info("Fetching historical data from 2 clusters in parallel...")
+    historical_data = fetch_data_from_clusters_parallel()
+    
+    # Combine scraped data and historical data (deduplicate by video_id)
+    # Newest data (all_videos) overwrites historical if duplicates exist
+    video_map = {v.get('video_id'): v for v in historical_data if v.get('video_id')}
+    for v in all_videos:
+        video_map[v['video_id']] = v
+    
+    combined_videos = list(video_map.values())
+    
+    if not combined_videos:
+        logger.error("No video data available (scraped or historical)")
         return
     
-    
     logger.info("Calculating channel aggregates...")
-    aggregates = calculate_channel_aggregates(all_videos)
+    aggregates = calculate_channel_aggregates(combined_videos)
     
     if aggregates.empty:
         logger.error("No aggregates calculated")
         return
     
     
-    if processed_channels and API_KEY:
-        logger.info("Fetching additional channel info...")
-        channel_info = channel_processor.get_channel_info(processed_channels)
+    # Collect all unique channel IDs from combined data for info fetching
+    all_channel_ids = list(set(v.get('channel_id') for v in combined_videos if v.get('channel_id')))
+    
+    if all_channel_ids and API_KEY:
+        logger.info(f"Fetching additional channel info for {len(all_channel_ids)} channels...")
+        channel_info = channel_processor.get_channel_info(all_channel_ids)
         
         
         aggregates["channel_created_date"] = aggregates["channel_id"].map(
@@ -937,5 +989,46 @@ def main():
     elapsed_time = time.time() - start_time
     logger.info(f"Completed in {elapsed_time:.2f} seconds")
 
+def run_scheduler():
+    """Schedules the scraper to run daily at 12:00 AM IST."""
+    logger.info("Scheduler started. The script will run daily at 12:00 AM IST.")
+    
+    while True:
+        try:
+            # IST timezone (UTC+5:30)
+            ist = timezone(timedelta(hours=5, minutes=30))
+            now = datetime.now(ist)
+            
+            # Target time: 12:00 AM (Midnight)
+            target_time = now.replace(hour=0, minute=0, second=0, microsecond=0)
+            
+            # If current time is past 12:00 AM, schedule for tomorrow
+            if now >= target_time:
+                target_time += timedelta(days=1)
+            
+            wait_seconds = (target_time - now).total_seconds()
+            logger.info(f"Next scrape scheduled for {target_time} IST (in {wait_seconds/3600:.2f} hours)")
+            
+            # Sleep until target time
+            time.sleep(wait_seconds)
+            
+            logger.info("Starting scheduled scrape...")
+            main()
+            logger.info("Scheduled scrape completed.")
+            
+            # Sleep for a minute to prevent double execution
+            time.sleep(60)
+            
+        except KeyboardInterrupt:
+            logger.info("Scheduler stopped manually.")
+            break
+        except Exception as e:
+            logger.error(f"Scheduler encountered an error: {e}")
+            time.sleep(60)
+
 if __name__ == "__main__":
-    main()
+    # Check for a flag to run immediately for testing, e.g., python y.py --now
+    if len(sys.argv) > 1 and sys.argv[1] == "--now":
+        main()
+    else:
+        run_scheduler()
