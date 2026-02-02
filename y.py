@@ -14,7 +14,7 @@ import logging
 from fastapi import FastAPI, BackgroundTasks
 import uvicorn
 import threading
-
+PORT=8000
 API_KEY = "AIzaSyB0BmlMTTcZIffxK16bLDFMyUcN7rOVtFM"  
 CHANNEL_URLS = [
 "https://www.youtube.com/@teamlokesh4698",
