@@ -724,7 +724,7 @@ class DatabaseManager:
     """Manage database operations"""
     
     def __init__(self):
-        self.client = MongoClient(MONGO_URL)
+        self.client = MongoClient(SECOND_MONGO_URL)
         self.db = self.client['youtube']
         self.collection = self.db['dailyscraping']
     
@@ -834,12 +834,12 @@ def calculate_channel_aggregates(videos: List[Dict[str, Any]]) -> pd.DataFrame:
     
     return agg
 
-def fetch_data_from_db(uri: str) -> List[Dict[str, Any]]:
+def fetch_data_from_db(uri: str, db_name: str, collection_name: str) -> List[Dict[str, Any]]:
     """Fetch all video data from a specific MongoDB cluster"""
     try:
         client = MongoClient(uri)
-        db = client['youtube']
-        collection = db['dailyscraping']
+        db = client[db_name]
+        collection = db[collection_name]
         data = list(collection.find({}, {"_id": 0}))
         client.close()
         logger.info(f"Fetched {len(data)} records from {uri.split('@')[1].split('/')[0]}")
@@ -850,10 +850,13 @@ def fetch_data_from_db(uri: str) -> List[Dict[str, Any]]:
 
 def fetch_data_from_clusters_parallel() -> List[Dict[str, Any]]:
     """Fetch data from both clusters in parallel"""
-    uris = [MONGO_URL, SECOND_MONGO_URL]
+    configs = [
+        (MONGO_URL, 'Youtube', 'Dailyscrape'),
+        (SECOND_MONGO_URL, 'youtube', 'dailyscraping')
+    ]
     all_data = []
-    with ThreadPoolExecutor(max_workers=len(uris)) as executor:
-        futures = [executor.submit(fetch_data_from_db, uri) for uri in uris]
+    with ThreadPoolExecutor(max_workers=len(configs)) as executor:
+        futures = [executor.submit(fetch_data_from_db, uri, db, col) for uri, db, col in configs]
         for future in as_completed(futures):
             all_data.extend(future.result())
     return all_data
