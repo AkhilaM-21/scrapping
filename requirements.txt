@@ -51,3 +51,6 @@ gsheets==0.6.1
 selenium
 webdriver-manager
 playwright
+pymongo
+yt-dlp
+dnspython
