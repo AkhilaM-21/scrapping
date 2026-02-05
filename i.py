@@ -13,7 +13,7 @@ COLLECTION_NAME = "daily_scrap"
 
 # ===== ScrapeBee =====
 SCRAPEBEE_API_KEY = "4OZI42TQMZDIYCYHC8SW796JM9748K2BFW5KBE2XR7AOI7GI1AWHWT4YVKVVVRQV9YF1YD7NKZ3BNVTU"
-SCRAPEBEE_ENDPOINT = "https://app.scrapebee.com/api/v1/"
+SCRAPEBEE_ENDPOINT = "https://api.scrapebee.com/v1/"
 
 # 3️⃣ MongoDB Connection
 client = MongoClient(MONGODB_URI)
